@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import { User } from "../models/User";
+import { Contact } from "../models/Contact";
 import { signToken, requireAuth } from "../lib/auth";
 
 const router: IRouter = Router();
@@ -21,8 +22,13 @@ router.post("/auth/register", async (req, res): Promise<void> => {
   const exists = await User.findOne({ email: email.toLowerCase() });
   if (exists) { res.status(400).json({ error: "Email already registered" }); return; }
   const user = await User.create({ name, email, password, role: role ?? "reseller" });
+  // Auto-link any Contact records with the same email (Splitwise-style ghost records)
+  const linked = await Contact.updateMany(
+    { email: email.toLowerCase(), isLinked: false },
+    { $set: { linkedUserId: user._id, isLinked: true } }
+  );
   const token = signToken({ userId: user._id.toString(), role: user.role });
-  res.status(201).json({ token, user: { id: user._id, name: user.name, email: user.email, role: user.role, isActive: user.isActive, createdAt: user.createdAt } });
+  res.status(201).json({ token, linkedSalesCount: linked.modifiedCount, user: { id: user._id, name: user.name, email: user.email, role: user.role, isActive: user.isActive, createdAt: user.createdAt } });
 });
 
 router.post("/auth/logout", (_req, res): void => { res.json({ ok: true }); });

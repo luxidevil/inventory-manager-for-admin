@@ -10,6 +10,7 @@ import type { SaleInputBuyerType } from './saleInputBuyerType';
 export interface SaleInput {
   buyerType: SaleInputBuyerType;
   buyerId?: string;
+  buyerContactId?: string;
   price: number;
   durationDays: number;
   startDate: Date;

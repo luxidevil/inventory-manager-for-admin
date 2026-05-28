@@ -40,6 +40,7 @@ import type {
   InventoryPage,
   InventoryRecord,
   InventoryUpdate,
+  InvitePreview,
   ListBatchesParams,
   ListContactsParams,
   ListInventoryParams,
@@ -49,6 +50,7 @@ import type {
   ListSettlementsParams,
   ListUsersParams,
   LoginInput,
+  MyPurchasesResult,
   Notification,
   RegisterInput,
   RenewalInput,
@@ -902,6 +904,83 @@ export const useCreateContact = <TError = ErrorType<unknown>,
       return useMutation(getCreateContactMutationOptions(options));
     }
 
+export const getGetInvitePreviewUrl = (token: string,) => {
+
+
+
+
+  return `/api/invite/${token}`
+}
+
+/**
+ * @summary Get invite preview (public, no auth)
+ */
+export const getInvitePreview = async (token: string, options?: RequestInit): Promise<InvitePreview> => {
+
+  return customFetch<InvitePreview>(getGetInvitePreviewUrl(token),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetInvitePreviewQueryKey = (token: string,) => {
+    return [
+    `/api/invite/${token}`
+    ] as const;
+    }
+
+
+export const getGetInvitePreviewQueryOptions = <TData = Awaited<ReturnType<typeof getInvitePreview>>, TError = ErrorType<void>>(token: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getInvitePreview>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetInvitePreviewQueryKey(token);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getInvitePreview>>> = ({ signal }) => getInvitePreview(token, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(token), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getInvitePreview>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetInvitePreviewQueryResult = NonNullable<Awaited<ReturnType<typeof getInvitePreview>>>
+export type GetInvitePreviewQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get invite preview (public, no auth)
+ */
+
+export function useGetInvitePreview<TData = Awaited<ReturnType<typeof getInvitePreview>>, TError = ErrorType<void>>(
+ token: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getInvitePreview>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetInvitePreviewQueryOptions(token,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
 export const getGetContactUrl = (id: string,) => {
 
 
@@ -1119,6 +1198,76 @@ export const useDeleteContact = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getDeleteContactMutationOptions(options));
+    }
+
+export const getGenerateContactInviteUrl = (id: string,) => {
+
+
+
+
+  return `/api/contacts/${id}/generate-invite`
+}
+
+/**
+ * @summary Generate invite link for a contact
+ */
+export const generateContactInvite = async (id: string, options?: RequestInit): Promise<Contact> => {
+
+  return customFetch<Contact>(getGenerateContactInviteUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getGenerateContactInviteMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateContactInvite>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generateContactInvite>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['generateContactInvite'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateContactInvite>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  generateContactInvite(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GenerateContactInviteMutationResult = NonNullable<Awaited<ReturnType<typeof generateContactInvite>>>
+
+    export type GenerateContactInviteMutationError = ErrorType<void>
+
+    /**
+ * @summary Generate invite link for a contact
+ */
+export const useGenerateContactInvite = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateContactInvite>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof generateContactInvite>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getGenerateContactInviteMutationOptions(options));
     }
 
 export const getListBatchesUrl = (params?: ListBatchesParams,) => {
@@ -2172,6 +2321,83 @@ export const useCreateSale = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getCreateSaleMutationOptions(options));
     }
+
+export const getGetMyPurchasesUrl = () => {
+
+
+
+
+  return `/api/sales/my-purchases`
+}
+
+/**
+ * @summary Get sales where the logged-in user is the linked contact buyer
+ */
+export const getMyPurchases = async ( options?: RequestInit): Promise<MyPurchasesResult> => {
+
+  return customFetch<MyPurchasesResult>(getGetMyPurchasesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetMyPurchasesQueryKey = () => {
+    return [
+    `/api/sales/my-purchases`
+    ] as const;
+    }
+
+
+export const getGetMyPurchasesQueryOptions = <TData = Awaited<ReturnType<typeof getMyPurchases>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMyPurchases>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMyPurchasesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyPurchases>>> = ({ signal }) => getMyPurchases({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMyPurchases>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetMyPurchasesQueryResult = NonNullable<Awaited<ReturnType<typeof getMyPurchases>>>
+export type GetMyPurchasesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get sales where the logged-in user is the linked contact buyer
+ */
+
+export function useGetMyPurchases<TData = Awaited<ReturnType<typeof getMyPurchases>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMyPurchases>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetMyPurchasesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 
 export const getGetSaleUrl = (id: string,) => {
 

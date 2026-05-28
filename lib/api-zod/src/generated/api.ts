@@ -148,6 +148,10 @@ export const ListContactsResponseItem = zod.object({
   "phone": zod.string().nullish(),
   "notes": zod.string().nullish(),
   "createdBy": zod.string().nullish(),
+  "isLinked": zod.boolean(),
+  "linkedUserId": zod.string().nullish(),
+  "inviteToken": zod.string().nullish(),
+  "pendingSalesCount": zod.number().optional(),
   "createdAt": zod.coerce.date()
 })
 export const ListContactsResponse = zod.array(ListContactsResponseItem)
@@ -165,6 +169,22 @@ export const CreateContactBody = zod.object({
 
 
 /**
+ * @summary Get invite preview (public, no auth)
+ */
+export const GetInvitePreviewParams = zod.object({
+  "token": zod.coerce.string()
+})
+
+export const GetInvitePreviewResponse = zod.object({
+  "contactName": zod.string(),
+  "contactEmail": zod.string().nullish(),
+  "inviterName": zod.string(),
+  "isAlreadyLinked": zod.boolean(),
+  "pendingSalesCount": zod.number()
+})
+
+
+/**
  * @summary Get contact
  */
 export const GetContactParams = zod.object({
@@ -178,6 +198,10 @@ export const GetContactResponse = zod.object({
   "phone": zod.string().nullish(),
   "notes": zod.string().nullish(),
   "createdBy": zod.string().nullish(),
+  "isLinked": zod.boolean(),
+  "linkedUserId": zod.string().nullish(),
+  "inviteToken": zod.string().nullish(),
+  "pendingSalesCount": zod.number().optional(),
   "createdAt": zod.coerce.date()
 })
 
@@ -203,6 +227,10 @@ export const UpdateContactResponse = zod.object({
   "phone": zod.string().nullish(),
   "notes": zod.string().nullish(),
   "createdBy": zod.string().nullish(),
+  "isLinked": zod.boolean(),
+  "linkedUserId": zod.string().nullish(),
+  "inviteToken": zod.string().nullish(),
+  "pendingSalesCount": zod.number().optional(),
   "createdAt": zod.coerce.date()
 })
 
@@ -212,6 +240,28 @@ export const UpdateContactResponse = zod.object({
  */
 export const DeleteContactParams = zod.object({
   "id": zod.coerce.string()
+})
+
+
+/**
+ * @summary Generate invite link for a contact
+ */
+export const GenerateContactInviteParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GenerateContactInviteResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "email": zod.string().nullish(),
+  "phone": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "createdBy": zod.string().nullish(),
+  "isLinked": zod.boolean(),
+  "linkedUserId": zod.string().nullish(),
+  "inviteToken": zod.string().nullish(),
+  "pendingSalesCount": zod.number().optional(),
+  "createdAt": zod.coerce.date()
 })
 
 
@@ -508,6 +558,10 @@ export const ListSalesResponse = zod.object({
   "buyerType": zod.enum(['platform_user', 'external_contact']),
   "buyerId": zod.string().nullish(),
   "buyerName": zod.string().nullish(),
+  "buyerContactId": zod.string().nullish(),
+  "buyerEmail": zod.string().nullish(),
+  "buyerIsLinked": zod.boolean().optional(),
+  "buyerInviteToken": zod.string().nullish(),
   "price": zod.number(),
   "durationDays": zod.number(),
   "startDate": zod.coerce.date(),
@@ -536,11 +590,47 @@ export const ListSalesResponse = zod.object({
 export const CreateSaleBody = zod.object({
   "buyerType": zod.enum(['platform_user', 'external_contact']),
   "buyerId": zod.string().optional(),
+  "buyerContactId": zod.string().optional(),
   "price": zod.number(),
   "durationDays": zod.number(),
   "startDate": zod.coerce.date(),
   "inventoryRecordIds": zod.array(zod.string()),
   "notes": zod.string().optional()
+})
+
+
+/**
+ * @summary Get sales where the logged-in user is the linked contact buyer
+ */
+export const GetMyPurchasesResponse = zod.object({
+  "sales": zod.array(zod.object({
+  "id": zod.string(),
+  "sellerId": zod.string(),
+  "sellerName": zod.string().nullish(),
+  "buyerType": zod.enum(['platform_user', 'external_contact']),
+  "buyerId": zod.string().nullish(),
+  "buyerName": zod.string().nullish(),
+  "buyerContactId": zod.string().nullish(),
+  "buyerEmail": zod.string().nullish(),
+  "buyerIsLinked": zod.boolean().optional(),
+  "buyerInviteToken": zod.string().nullish(),
+  "price": zod.number(),
+  "durationDays": zod.number(),
+  "startDate": zod.coerce.date(),
+  "expiryDate": zod.coerce.date(),
+  "itemCount": zod.number(),
+  "status": zod.enum(['active', 'completed', 'refunded', 'replaced', 'expired']).optional(),
+  "notes": zod.string().nullish(),
+  "items": zod.array(zod.object({
+  "id": zod.string(),
+  "inventoryRecordId": zod.string(),
+  "email": zod.string(),
+  "daysLeft": zod.number(),
+  "status": zod.string().optional()
+})).optional(),
+  "createdAt": zod.coerce.date()
+})),
+  "total": zod.number()
 })
 
 
@@ -558,6 +648,10 @@ export const GetSaleResponse = zod.object({
   "buyerType": zod.enum(['platform_user', 'external_contact']),
   "buyerId": zod.string().nullish(),
   "buyerName": zod.string().nullish(),
+  "buyerContactId": zod.string().nullish(),
+  "buyerEmail": zod.string().nullish(),
+  "buyerIsLinked": zod.boolean().optional(),
+  "buyerInviteToken": zod.string().nullish(),
   "price": zod.number(),
   "durationDays": zod.number(),
   "startDate": zod.coerce.date(),
@@ -596,6 +690,10 @@ export const RenewSaleResponse = zod.object({
   "buyerType": zod.enum(['platform_user', 'external_contact']),
   "buyerId": zod.string().nullish(),
   "buyerName": zod.string().nullish(),
+  "buyerContactId": zod.string().nullish(),
+  "buyerEmail": zod.string().nullish(),
+  "buyerIsLinked": zod.boolean().optional(),
+  "buyerInviteToken": zod.string().nullish(),
   "price": zod.number(),
   "durationDays": zod.number(),
   "startDate": zod.coerce.date(),

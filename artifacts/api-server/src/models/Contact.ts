@@ -6,7 +6,11 @@ export interface IContact extends Document {
   phone?: string;
   notes?: string;
   createdBy: mongoose.Types.ObjectId;
+  inviteToken?: string;
+  linkedUserId?: mongoose.Types.ObjectId;
+  isLinked: boolean;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 const ContactSchema = new Schema<IContact>(
@@ -16,6 +20,9 @@ const ContactSchema = new Schema<IContact>(
     phone: String,
     notes: String,
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    inviteToken: { type: String, sparse: true, index: true },
+    linkedUserId: { type: Schema.Types.ObjectId, ref: "User" },
+    isLinked: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

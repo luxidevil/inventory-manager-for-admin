@@ -64,6 +64,76 @@ export interface UserUpdate {
   isActive?: boolean;
 }
 
+export interface InvitePreview {
+  contactName: string;
+  /** @nullable */
+  contactEmail?: string | null;
+  inviterName: string;
+  isAlreadyLinked: boolean;
+  pendingSalesCount: number;
+}
+
+export type SaleBuyerType = typeof SaleBuyerType[keyof typeof SaleBuyerType];
+
+
+export const SaleBuyerType = {
+  platform_user: 'platform_user',
+  external_contact: 'external_contact',
+} as const;
+
+export type SaleStatus = typeof SaleStatus[keyof typeof SaleStatus];
+
+
+export const SaleStatus = {
+  active: 'active',
+  completed: 'completed',
+  refunded: 'refunded',
+  replaced: 'replaced',
+  expired: 'expired',
+} as const;
+
+export interface SaleItem {
+  id: string;
+  inventoryRecordId: string;
+  email: string;
+  daysLeft: number;
+  status?: string;
+}
+
+export interface Sale {
+  id: string;
+  sellerId: string;
+  /** @nullable */
+  sellerName?: string | null;
+  buyerType: SaleBuyerType;
+  /** @nullable */
+  buyerId?: string | null;
+  /** @nullable */
+  buyerName?: string | null;
+  /** @nullable */
+  buyerContactId?: string | null;
+  /** @nullable */
+  buyerEmail?: string | null;
+  buyerIsLinked?: boolean;
+  /** @nullable */
+  buyerInviteToken?: string | null;
+  price: number;
+  durationDays: number;
+  startDate: string;
+  expiryDate: string;
+  itemCount: number;
+  status?: SaleStatus;
+  /** @nullable */
+  notes?: string | null;
+  items?: SaleItem[];
+  createdAt: string;
+}
+
+export interface MyPurchasesResult {
+  sales: Sale[];
+  total: number;
+}
+
 export interface Contact {
   id: string;
   name: string;
@@ -75,6 +145,12 @@ export interface Contact {
   notes?: string | null;
   /** @nullable */
   createdBy?: string | null;
+  isLinked: boolean;
+  /** @nullable */
+  linkedUserId?: string | null;
+  /** @nullable */
+  inviteToken?: string | null;
+  pendingSalesCount?: number;
   createdAt: string;
 }
 
@@ -208,55 +284,6 @@ export interface InventoryUpdate {
   startDate?: string;
 }
 
-export type SaleBuyerType = typeof SaleBuyerType[keyof typeof SaleBuyerType];
-
-
-export const SaleBuyerType = {
-  platform_user: 'platform_user',
-  external_contact: 'external_contact',
-} as const;
-
-export type SaleStatus = typeof SaleStatus[keyof typeof SaleStatus];
-
-
-export const SaleStatus = {
-  active: 'active',
-  completed: 'completed',
-  refunded: 'refunded',
-  replaced: 'replaced',
-  expired: 'expired',
-} as const;
-
-export interface SaleItem {
-  id: string;
-  inventoryRecordId: string;
-  email: string;
-  daysLeft: number;
-  status?: string;
-}
-
-export interface Sale {
-  id: string;
-  sellerId: string;
-  /** @nullable */
-  sellerName?: string | null;
-  buyerType: SaleBuyerType;
-  /** @nullable */
-  buyerId?: string | null;
-  /** @nullable */
-  buyerName?: string | null;
-  price: number;
-  durationDays: number;
-  startDate: string;
-  expiryDate: string;
-  itemCount: number;
-  status?: SaleStatus;
-  /** @nullable */
-  notes?: string | null;
-  items?: SaleItem[];
-  createdAt: string;
-}
-
 export interface SalePage {
   sales: Sale[];
   total: number;
@@ -275,6 +302,7 @@ export const SaleInputBuyerType = {
 export interface SaleInput {
   buyerType: SaleInputBuyerType;
   buyerId?: string;
+  buyerContactId?: string;
   price: number;
   durationDays: number;
   startDate: string;

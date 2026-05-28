@@ -232,6 +232,27 @@ paths:
               schema:
                 $ref: "#/components/schemas/Contact"
 
+  /invite/{token}:
+    get:
+      operationId: getInvitePreview
+      tags: [contacts]
+      summary: Get invite preview (public, no auth)
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Invite preview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvitePreview"
+        "404":
+          description: Invalid invite token
+
   /contacts/{id}:
     get:
       operationId: getContact
@@ -288,6 +309,29 @@ paths:
       responses:
         "204":
           description: Deleted
+
+  /contacts/{id}/generate-invite:
+    post:
+      operationId: generateContactInvite
+      tags: [contacts]
+      summary: Generate invite link for a contact
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Contact with invite token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+        "400":
+          description: Contact has no email or is already linked
+        "404":
+          description: Not found
 
   # BATCHES
   /batches:
@@ -598,6 +642,19 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Sale"
+
+  /sales/my-purchases:
+    get:
+      operationId: getMyPurchases
+      tags: [sales]
+      summary: Get sales where the logged-in user is the linked contact buyer
+      responses:
+        "200":
+          description: My purchases
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyPurchasesResult"
 
   /sales/{id}:
     get:
@@ -1030,10 +1087,37 @@ components:
         isActive:
           type: boolean
 
+    # INVITE
+    InvitePreview:
+      type: object
+      required: [contactName, inviterName, isAlreadyLinked, pendingSalesCount]
+      properties:
+        contactName:
+          type: string
+        contactEmail:
+          type: ["string", "null"]
+        inviterName:
+          type: string
+        isAlreadyLinked:
+          type: boolean
+        pendingSalesCount:
+          type: number
+
+    MyPurchasesResult:
+      type: object
+      required: [sales, total]
+      properties:
+        sales:
+          type: array
+          items:
+            $ref: "#/components/schemas/Sale"
+        total:
+          type: number
+
     # CONTACT
     Contact:
       type: object
-      required: [id, name, createdAt]
+      required: [id, name, createdAt, isLinked]
       properties:
         id:
           type: string
@@ -1047,6 +1131,14 @@ components:
           type: ["string", "null"]
         createdBy:
           type: ["string", "null"]
+        isLinked:
+          type: boolean
+        linkedUserId:
+          type: ["string", "null"]
+        inviteToken:
+          type: ["string", "null"]
+        pendingSalesCount:
+          type: number
         createdAt:
           type: string
           format: date-time
@@ -1286,6 +1378,14 @@ components:
           type: ["string", "null"]
         buyerName:
           type: ["string", "null"]
+        buyerContactId:
+          type: ["string", "null"]
+        buyerEmail:
+          type: ["string", "null"]
+        buyerIsLinked:
+          type: boolean
+        buyerInviteToken:
+          type: ["string", "null"]
         price:
           type: number
         durationDays:
@@ -1349,6 +1449,8 @@ components:
           type: string
           enum: [platform_user, external_contact]
         buyerId:
+          type: string
+        buyerContactId:
           type: string
         price:
           type: number

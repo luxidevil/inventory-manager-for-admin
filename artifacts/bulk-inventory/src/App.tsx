@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import NotFound from "@/pages/not-found";
 import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
+import InvitePage from "@/pages/invite";
 import DashboardPage from "@/pages/dashboard";
 import BatchesPage from "@/pages/batches";
 import InventoryPage from "@/pages/inventory";
@@ -38,6 +39,7 @@ function Router() {
     <Switch>
       <Route path="/login" component={LoginPage} />
       <Route path="/register" component={RegisterPage} />
+      <Route path="/invite/:token" component={InvitePage} />
       <Route path="/" component={() => <ProtectedRoute component={DashboardPage} />} />
       <Route path="/batches" component={() => <ProtectedRoute component={BatchesPage} />} />
       <Route path="/inventory" component={() => <ProtectedRoute component={InventoryPage} />} />

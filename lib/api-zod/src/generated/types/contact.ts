@@ -17,5 +17,11 @@ export interface Contact {
   notes?: string | null;
   /** @nullable */
   createdBy?: string | null;
+  isLinked: boolean;
+  /** @nullable */
+  linkedUserId?: string | null;
+  /** @nullable */
+  inviteToken?: string | null;
+  pendingSalesCount?: number;
   createdAt: Date;
 }

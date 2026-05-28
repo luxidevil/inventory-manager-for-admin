@@ -1,10 +1,12 @@
-import { useGetDashboardStats, useGetRecentActivity, useGetExpirySummary } from "@workspace/api-client-react";
+import { useGetDashboardStats, useGetRecentActivity, useGetExpirySummary, useGetMyPurchases } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDateTime } from "@/lib/utils";
+import { useLocation } from "wouter";
 import {
   Package, ShoppingCart, AlertTriangle, Clock, TrendingUp,
-  RefreshCcw, Bell, Archive
+  RefreshCcw, Bell, Archive, Link2
 } from "lucide-react";
 
 function StatCard({ title, value, icon: Icon, color, subtitle }: { title: string; value: number | string; icon: any; color: string; subtitle?: string }) {
@@ -27,9 +29,13 @@ function StatCard({ title, value, icon: Icon, color, subtitle }: { title: string
 }
 
 export default function DashboardPage() {
+  const [, setLocation] = useLocation();
   const { data: stats, isLoading: statsLoading } = useGetDashboardStats({ query: { refetchInterval: 30000 } } as any);
   const { data: activity = [], isLoading: activityLoading } = useGetRecentActivity({ query: { refetchInterval: 30000 } } as any);
   const { data: expiry, isLoading: expiryLoading } = useGetExpirySummary({ query: { refetchInterval: 30000 } } as any);
+  const { data: myPurchasesData } = useGetMyPurchases();
+  const myPurchases = (myPurchasesData as any)?.sales ?? [];
+  const myPurchasesTotal = (myPurchasesData as any)?.total ?? 0;
 
   if (statsLoading) {
     return (
@@ -43,6 +49,12 @@ export default function DashboardPage() {
 
   const s = stats as any;
   const e = expiry as any;
+  const SALE_STATUS: Record<string, string> = {
+    active: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+    expired: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400",
+    refunded: "bg-yellow-100 text-yellow-700",
+    replaced: "bg-purple-100 text-purple-700",
+  };
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-7xl">
@@ -65,6 +77,25 @@ export default function DashboardPage() {
         <StatCard title="Pending Replacements" value={s?.pendingReplacements ?? 0} icon={Bell} color="bg-pink-500" />
         <StatCard title="Total Revenue" value={`$${(s?.totalRevenue ?? 0).toFixed(2)}`} icon={TrendingUp} color="bg-emerald-500" subtitle={`${s?.totalSales ?? 0} sales`} />
       </div>
+
+      {/* My Purchases banner — shown when this account was pre-added as a buyer */}
+      {myPurchasesTotal > 0 && (
+        <Card className="border-primary/40 bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors" onClick={() => setLocation("/sales")}>
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="rounded-xl bg-primary p-2.5 flex-shrink-0">
+              <Link2 className="h-5 w-5 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-sm">You have linked purchases</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {myPurchasesTotal} sale{myPurchasesTotal !== 1 ? "s" : ""} were recorded in your name before you joined.
+                {myPurchases[0] && ` Latest: ${myPurchases[0].itemCount} records from ${myPurchases[0].sellerName ?? "a seller"}.`}
+              </p>
+            </div>
+            <Badge variant="secondary" className="flex-shrink-0 text-xs">{myPurchasesTotal} sale{myPurchasesTotal !== 1 ? "s" : ""}</Badge>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid md:grid-cols-2 gap-6">
         {/* Expiry breakdown */}

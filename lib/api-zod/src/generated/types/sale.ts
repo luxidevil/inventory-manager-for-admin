@@ -19,6 +19,13 @@ export interface Sale {
   buyerId?: string | null;
   /** @nullable */
   buyerName?: string | null;
+  /** @nullable */
+  buyerContactId?: string | null;
+  /** @nullable */
+  buyerEmail?: string | null;
+  buyerIsLinked?: boolean;
+  /** @nullable */
+  buyerInviteToken?: string | null;
   price: number;
   durationDays: number;
   startDate: Date;

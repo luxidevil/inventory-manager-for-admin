@@ -29,7 +29,7 @@ export default function NotificationsPage() {
           {unread > 0 && <p className="text-muted-foreground text-sm mt-0.5">{unread} unread</p>}
         </div>
         {unread > 0 && (
-          <Button variant="outline" size="sm" onClick={() => markAllMutation.mutate({})}>
+          <Button variant="outline" size="sm" onClick={() => markAllMutation.mutate()}>
             <CheckCheck className="h-4 w-4 mr-2" />Mark all read
           </Button>
         )}
