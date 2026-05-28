@@ -1,0 +1,2 @@
+- [Generated hook naming](generated-hook-naming.md) — Orval generates useListX/useCreateX/useUpdateX/useDeleteX, NOT useGetX/usePostX/usePatchX
+- [MongoDB dashboard aggregation](mongo-aggregation-objectid.md) — Must import mongoose and use new mongoose.Types.ObjectId(userId) in aggregate $match, not string userId
