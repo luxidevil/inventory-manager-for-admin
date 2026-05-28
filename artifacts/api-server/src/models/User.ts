@@ -7,6 +7,8 @@ export interface IUser extends Document {
   password: string;
   role: "admin" | "bulk_seller" | "reseller" | "small_seller";
   isActive: boolean;
+  isDeleted: boolean;
+  deletedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(plain: string): Promise<boolean>;
@@ -19,6 +21,8 @@ const UserSchema = new Schema<IUser>(
     password: { type: String, required: true },
     role: { type: String, enum: ["admin", "bulk_seller", "reseller", "small_seller"], default: "reseller" },
     isActive: { type: Boolean, default: true },
+    isDeleted: { type: Boolean, default: false, index: true },
+    deletedAt: Date,
   },
   { timestamps: true }
 );

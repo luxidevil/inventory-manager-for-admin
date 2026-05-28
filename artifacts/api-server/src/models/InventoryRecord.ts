@@ -14,6 +14,8 @@ export interface IInventoryRecord extends Document {
   isSold: boolean;
   isReported: boolean;
   lineage: mongoose.Types.ObjectId[];
+  isDeleted: boolean;
+  deletedAt?: Date;
   createdAt: Date;
 }
 
@@ -36,6 +38,8 @@ const InventoryRecordSchema = new Schema<IInventoryRecord>(
     isSold: { type: Boolean, default: false },
     isReported: { type: Boolean, default: false },
     lineage: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    isDeleted: { type: Boolean, default: false, index: true },
+    deletedAt: Date,
   },
   { timestamps: true }
 );

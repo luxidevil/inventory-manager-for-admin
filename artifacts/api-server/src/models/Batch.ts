@@ -9,6 +9,8 @@ export interface IBatch extends Document {
   totalRecords: number;
   availableRecords: number;
   soldRecords: number;
+  isDeleted: boolean;
+  deletedAt?: Date;
   createdAt: Date;
 }
 
@@ -22,6 +24,8 @@ const BatchSchema = new Schema<IBatch>(
     totalRecords: { type: Number, default: 0 },
     availableRecords: { type: Number, default: 0 },
     soldRecords: { type: Number, default: 0 },
+    isDeleted: { type: Boolean, default: false, index: true },
+    deletedAt: Date,
   },
   { timestamps: true }
 );

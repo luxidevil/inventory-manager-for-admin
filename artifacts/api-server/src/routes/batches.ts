@@ -55,7 +55,7 @@ router.post("/batches/extract-emails", requireAuth, async (req, res): Promise<vo
 router.get("/batches", requireAuth, async (req, res): Promise<void> => {
   const { search, ownerId } = req.query as Record<string, string>;
   const { userId } = (req as any).user;
-  const filter: Record<string, unknown> = { ownerId: ownerId ?? userId };
+  const filter: Record<string, unknown> = { ownerId: ownerId ?? userId, isDeleted: { $ne: true } };
   if (search) filter.name = new RegExp(search, "i");
   const batches = await Batch.find(filter).populate("ownerId", "name").populate("sourcedFromUserId", "name").sort({ createdAt: -1 });
   res.json(batches.map(b => ({
@@ -76,7 +76,7 @@ router.post("/batches", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.get("/batches/:id", requireAuth, async (req, res): Promise<void> => {
-  const batch = await Batch.findById(req.params.id).populate("ownerId", "name").populate("sourcedFromUserId", "name");
+  const batch = await Batch.findOne({ _id: req.params.id, isDeleted: { $ne: true } }).populate("ownerId", "name").populate("sourcedFromUserId", "name");
   if (!batch) { res.status(404).json({ error: "Not found" }); return; }
   res.json({ id: batch._id, name: batch.name, notes: batch.notes, ownerId: (batch.ownerId as any)._id, ownerName: (batch.ownerId as any).name ?? null, sourcedFromUserId: batch.sourcedFromUserId ?? null, sourcedFromUserName: batch.sourcedFromUserId ? (batch.sourcedFromUserId as any).name : null, isSourced: batch.isSourced, totalRecords: batch.totalRecords, availableRecords: batch.availableRecords, soldRecords: batch.soldRecords, createdAt: batch.createdAt });
 });
@@ -88,7 +88,7 @@ router.patch("/batches/:id", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.delete("/batches/:id", requireAuth, async (req, res): Promise<void> => {
-  await Batch.findByIdAndDelete(req.params.id);
+  await Batch.findByIdAndUpdate(req.params.id, { isDeleted: true, deletedAt: new Date() });
   res.sendStatus(204);
 });
 

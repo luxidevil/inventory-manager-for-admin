@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { useListInventory, useListBatches } from "@workspace/api-client-react";
+import { useListInventory, useListBatches, useDeleteInventoryRecord } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 import { formatDate, daysLeftBadge, cn } from "@/lib/utils";
-import { Package, Search, Filter, ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { Package, Search, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 
 const STATUS_OPTIONS = [
   { value: "all", label: "All Status" },
@@ -34,7 +36,11 @@ export default function InventoryPage() {
   const [status, setStatus] = useState("all");
   const [batchId, setBatchId] = useState("all");
   const [page, setPage] = useState(1);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; email: string } | null>(null);
   const limit = 50;
+
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const params: any = { page: String(page), limit: String(limit) };
   if (search) params.search = search;
@@ -43,6 +49,21 @@ export default function InventoryPage() {
 
   const { data, isLoading } = useListInventory(params, { query: { keepPreviousData: true } } as any);
   const { data: batches = [] } = useListBatches({} as any);
+
+  const deleteMutation = useDeleteInventoryRecord({
+    mutation: {
+      onSuccess() {
+        queryClient.invalidateQueries({ queryKey: ["/api/inventory"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/batches"] });
+        toast({ title: "Record removed", description: `${deleteTarget?.email} was removed from your inventory.` });
+        setDeleteTarget(null);
+      },
+      onError() {
+        toast({ title: "Error", description: "Could not remove the record.", variant: "destructive" });
+        setDeleteTarget(null);
+      },
+    },
+  });
 
   const records = (data as any)?.records ?? [];
   const total = (data as any)?.total ?? 0;
@@ -55,7 +76,6 @@ export default function InventoryPage() {
         <p className="text-muted-foreground text-sm mt-0.5">{total} records total</p>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-wrap gap-2">
         <div className="relative flex-1 min-w-48">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -92,11 +112,12 @@ export default function InventoryPage() {
                   <th className="text-left py-3 px-4 font-medium text-muted-foreground">Status</th>
                   <th className="text-right py-3 px-4 font-medium text-muted-foreground">Days Left</th>
                   <th className="text-right py-3 px-4 font-medium text-muted-foreground hidden md:table-cell">Expires</th>
+                  <th className="py-3 px-4 w-10"></th>
                 </tr>
               </thead>
               <tbody>
                 {records.map((r: any) => (
-                  <tr key={r.id} className="border-b last:border-0 hover:bg-muted/20 transition-colors">
+                  <tr key={r.id} className="border-b last:border-0 hover:bg-muted/20 transition-colors group">
                     <td className="py-3 px-4 font-mono text-xs truncate max-w-[200px]">{r.email}</td>
                     <td className="py-3 px-4 text-muted-foreground hidden md:table-cell">{r.batchName ?? "—"}</td>
                     <td className="py-3 px-4">
@@ -108,6 +129,17 @@ export default function InventoryPage() {
                       </span>
                     </td>
                     <td className="py-3 px-4 text-right text-muted-foreground hidden md:table-cell">{formatDate(r.expiryDate)}</td>
+                    <td className="py-3 px-2 text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all"
+                        aria-label={`Delete ${r.email}`}
+                        onClick={() => setDeleteTarget({ id: r.id, email: r.email })}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -125,6 +157,26 @@ export default function InventoryPage() {
           )}
         </>
       )}
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={open => { if (!open) setDeleteTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove inventory record?</AlertDialogTitle>
+            <AlertDialogDescription>
+              <span className="font-mono font-medium">{deleteTarget?.email}</span> will be removed from your inventory view. The record is preserved in the database for auditing purposes.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteTarget && deleteMutation.mutate({ id: deleteTarget.id })}
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

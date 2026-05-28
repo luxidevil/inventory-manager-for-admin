@@ -6,7 +6,7 @@ const router: IRouter = Router();
 
 router.get("/users", requireAuth, async (req, res): Promise<void> => {
   const { role, search } = req.query as Record<string, string>;
-  const filter: Record<string, unknown> = {};
+  const filter: Record<string, unknown> = { isDeleted: { $ne: true } };
   if (role) filter.role = role;
   if (search) filter.$or = [{ name: new RegExp(search, "i") }, { email: new RegExp(search, "i") }];
   const users = await User.find(filter).select("-password").sort({ createdAt: -1 });
@@ -14,7 +14,7 @@ router.get("/users", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.get("/users/:id", requireAuth, async (req, res): Promise<void> => {
-  const user = await User.findById(req.params.id).select("-password");
+  const user = await User.findOne({ _id: req.params.id, isDeleted: { $ne: true } }).select("-password");
   if (!user) { res.status(404).json({ error: "User not found" }); return; }
   res.json({ id: user._id, name: user.name, email: user.email, role: user.role, isActive: user.isActive, createdAt: user.createdAt });
 });
@@ -27,7 +27,7 @@ router.patch("/users/:id", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.delete("/users/:id", requireAuth, async (req, res): Promise<void> => {
-  await User.findByIdAndDelete(req.params.id);
+  await User.findByIdAndUpdate(req.params.id, { isDeleted: true, deletedAt: new Date(), isActive: false });
   res.sendStatus(204);
 });
 

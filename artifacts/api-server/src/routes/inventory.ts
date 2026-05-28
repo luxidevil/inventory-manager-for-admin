@@ -25,7 +25,7 @@ function formatRecord(r: any) {
 router.get("/inventory", requireAuth, async (req, res): Promise<void> => {
   const { search, batchId, status, minDaysLeft, holderId, page = "1", limit = "50" } = req.query as Record<string, string>;
   const { userId } = (req as any).user;
-  const filter: Record<string, unknown> = { currentHolderId: holderId ?? userId };
+  const filter: Record<string, unknown> = { currentHolderId: holderId ?? userId, isDeleted: { $ne: true } };
   if (batchId) filter.batchId = batchId;
   if (status) filter.status = status;
   if (search) filter.emailNormalized = new RegExp(search.toLowerCase(), "i");
@@ -48,12 +48,13 @@ router.get("/inventory/expiring", requireAuth, async (req, res): Promise<void> =
     currentHolderId: userId,
     expiryDate: { $lte: twoDaysFromNow },
     status: { $nin: ["wiped", "replaced", "refunded"] },
+    isDeleted: { $ne: true },
   }).populate("batchId", "name").populate("ownerId", "name").populate("currentHolderId", "name").sort({ expiryDate: 1 });
   res.json(records.map(formatRecord));
 });
 
 router.get("/inventory/:id", requireAuth, async (req, res): Promise<void> => {
-  const r = await InventoryRecord.findById(req.params.id).populate("batchId", "name").populate("ownerId", "name").populate("currentHolderId", "name");
+  const r = await InventoryRecord.findOne({ _id: req.params.id, isDeleted: { $ne: true } }).populate("batchId", "name").populate("ownerId", "name").populate("currentHolderId", "name");
   if (!r) { res.status(404).json({ error: "Not found" }); return; }
   res.json(formatRecord(r));
 });
@@ -65,7 +66,7 @@ router.patch("/inventory/:id", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.delete("/inventory/:id", requireAuth, async (req, res): Promise<void> => {
-  await InventoryRecord.findByIdAndDelete(req.params.id);
+  await InventoryRecord.findByIdAndUpdate(req.params.id, { isDeleted: true, deletedAt: new Date() });
   res.sendStatus(204);
 });
 

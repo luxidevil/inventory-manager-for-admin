@@ -39,7 +39,7 @@ router.get("/invite/:token", async (req, res): Promise<void> => {
 router.get("/contacts", requireAuth, async (req, res): Promise<void> => {
   const { search } = req.query as Record<string, string>;
   const { userId } = (req as any).user;
-  const filter: Record<string, unknown> = { createdBy: userId };
+  const filter: Record<string, unknown> = { createdBy: userId, isDeleted: { $ne: true } };
   if (search) filter.$or = [{ name: new RegExp(search, "i") }, { email: new RegExp(search, "i") }];
   const contacts = await Contact.find(filter).sort({ createdAt: -1 });
   // Enrich with pending sales count
@@ -59,7 +59,7 @@ router.post("/contacts", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.get("/contacts/:id", requireAuth, async (req, res): Promise<void> => {
-  const contact = await Contact.findById(req.params.id);
+  const contact = await Contact.findOne({ _id: req.params.id, isDeleted: { $ne: true } });
   if (!contact) { res.status(404).json({ error: "Not found" }); return; }
   const pendingSalesCount = await Sale.countDocuments({ buyerContactId: contact._id });
   res.json({ ...formatContact(contact), pendingSalesCount });
@@ -73,7 +73,7 @@ router.patch("/contacts/:id", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.delete("/contacts/:id", requireAuth, async (req, res): Promise<void> => {
-  await Contact.findByIdAndDelete(req.params.id);
+  await Contact.findByIdAndUpdate(req.params.id, { isDeleted: true, deletedAt: new Date() });
   res.sendStatus(204);
 });
 

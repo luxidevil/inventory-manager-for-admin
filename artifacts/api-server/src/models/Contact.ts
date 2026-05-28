@@ -9,6 +9,8 @@ export interface IContact extends Document {
   inviteToken?: string;
   linkedUserId?: mongoose.Types.ObjectId;
   isLinked: boolean;
+  isDeleted: boolean;
+  deletedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,6 +25,8 @@ const ContactSchema = new Schema<IContact>(
     inviteToken: { type: String, sparse: true, index: true },
     linkedUserId: { type: Schema.Types.ObjectId, ref: "User" },
     isLinked: { type: Boolean, default: false },
+    isDeleted: { type: Boolean, default: false, index: true },
+    deletedAt: Date,
   },
   { timestamps: true }
 );
