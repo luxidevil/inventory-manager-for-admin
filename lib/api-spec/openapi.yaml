@@ -3,20 +3,40 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Bulk Inventory Manager API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication
+  - name: users
+    description: User management
+  - name: contacts
+    description: External contacts
+  - name: batches
+    description: Inventory batches
+  - name: inventory
+    description: Inventory records
+  - name: sales
+    description: Sales and transactions
+  - name: reports
+    description: Reports and issues
+  - name: settlements
+    description: Refunds and settlements
+  - name: notifications
+    description: Notifications
+  - name: dashboard
+    description: Dashboard stats
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +44,1597 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # AUTH
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResult"
+        "401":
+          description: Unauthorized
+
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          description: Registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResult"
+        "400":
+          description: Bad request
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+
+  # USERS
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List users
+      parameters:
+        - name: role
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+  /users/{id}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateUser
+      tags: [users]
+      summary: Update user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    delete:
+      operationId: deleteUser
+      tags: [users]
+      summary: Delete user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  # CONTACTS
+  /contacts:
+    get:
+      operationId: listContacts
+      tags: [contacts]
+      summary: List external contacts
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of contacts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Contact"
+    post:
+      operationId: createContact
+      tags: [contacts]
+      summary: Create external contact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+
+  /contacts/{id}:
+    get:
+      operationId: getContact
+      tags: [contacts]
+      summary: Get contact
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Contact
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateContact
+      tags: [contacts]
+      summary: Update contact
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ContactUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+    delete:
+      operationId: deleteContact
+      tags: [contacts]
+      summary: Delete contact
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  # BATCHES
+  /batches:
+    get:
+      operationId: listBatches
+      tags: [batches]
+      summary: List inventory batches
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: ownerId
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of batches
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Batch"
+    post:
+      operationId: createBatch
+      tags: [batches]
+      summary: Create inventory batch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Batch"
+
+  /batches/extract-emails:
+    post:
+      operationId: extractEmails
+      tags: [batches]
+      summary: Extract and validate emails from raw text
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExtractEmailsInput"
+      responses:
+        "200":
+          description: Extracted emails with duplicate analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExtractEmailsResult"
+
+  /batches/{id}:
+    get:
+      operationId: getBatch
+      tags: [batches]
+      summary: Get batch
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Batch
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Batch"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateBatch
+      tags: [batches]
+      summary: Update batch
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Batch"
+    delete:
+      operationId: deleteBatch
+      tags: [batches]
+      summary: Delete batch
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /batches/{id}/upload:
+    post:
+      operationId: uploadBatchRecords
+      tags: [batches]
+      summary: Upload inventory records to batch
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchUploadInput"
+      responses:
+        "200":
+          description: Upload result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchUploadResult"
+
+  # INVENTORY
+  /inventory:
+    get:
+      operationId: listInventory
+      tags: [inventory]
+      summary: List inventory records
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: batchId
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: minDaysLeft
+          in: query
+          schema:
+            type: number
+        - name: holderId
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: number
+        - name: limit
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Inventory records
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryPage"
+
+  /inventory/expiring:
+    get:
+      operationId: listExpiringInventory
+      tags: [inventory]
+      summary: Get expiring inventory (within 2 days)
+      responses:
+        "200":
+          description: Expiring records
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InventoryRecord"
+
+  /inventory/{id}:
+    get:
+      operationId: getInventoryRecord
+      tags: [inventory]
+      summary: Get inventory record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryRecord"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateInventoryRecord
+      tags: [inventory]
+      summary: Update inventory record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InventoryUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryRecord"
+    delete:
+      operationId: deleteInventoryRecord
+      tags: [inventory]
+      summary: Delete inventory record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  # SALES
+  /sales:
+    get:
+      operationId: listSales
+      tags: [sales]
+      summary: List sales
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: buyerId
+          in: query
+          schema:
+            type: string
+        - name: sellerId
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: number
+        - name: limit
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Sales list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SalePage"
+    post:
+      operationId: createSale
+      tags: [sales]
+      summary: Create a sale
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaleInput"
+      responses:
+        "201":
+          description: Sale created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sale"
+
+  /sales/{id}:
+    get:
+      operationId: getSale
+      tags: [sales]
+      summary: Get sale
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Sale
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sale"
+        "404":
+          description: Not found
+
+  /sales/{id}/renew:
+    post:
+      operationId: renewSale
+      tags: [sales]
+      summary: Renew a sale
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RenewalInput"
+      responses:
+        "200":
+          description: Renewed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sale"
+
+  # REPORTS
+  /reports:
+    get:
+      operationId: listReports
+      tags: [reports]
+      summary: List reports
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: reportedBy
+          in: query
+          schema:
+            type: string
+        - name: saleId
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: number
+        - name: limit
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Reports list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportPage"
+    post:
+      operationId: createReport
+      tags: [reports]
+      summary: Create a report (single or bulk)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportInput"
+      responses:
+        "201":
+          description: Report created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Report"
+
+  /reports/{id}:
+    get:
+      operationId: getReport
+      tags: [reports]
+      summary: Get report
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Report"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateReport
+      tags: [reports]
+      summary: Update report status/action
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Report"
+
+  /reports/{id}/replace:
+    post:
+      operationId: replaceReportItem
+      tags: [reports]
+      summary: Replace a single reported record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SingleReplaceInput"
+      responses:
+        "200":
+          description: Replaced
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Report"
+
+  /reports/{id}/bulk-replace:
+    post:
+      operationId: bulkReplaceReport
+      tags: [reports]
+      summary: Bulk replace reported records
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkReplaceInput"
+      responses:
+        "200":
+          description: Bulk replace result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BulkReplaceResult"
+
+  # SETTLEMENTS
+  /settlements:
+    get:
+      operationId: listSettlements
+      tags: [settlements]
+      summary: List settlements
+      parameters:
+        - name: reportId
+          in: query
+          schema:
+            type: string
+        - name: saleId
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Settlements list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Settlement"
+    post:
+      operationId: createSettlement
+      tags: [settlements]
+      summary: Create settlement / process refund
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SettlementInput"
+      responses:
+        "201":
+          description: Settlement created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settlement"
+
+  /settlements/{id}:
+    get:
+      operationId: getSettlement
+      tags: [settlements]
+      summary: Get settlement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Settlement
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Settlement"
+        "404":
+          description: Not found
+
+  # NOTIFICATIONS
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [notifications]
+      summary: List notifications for current user
+      parameters:
+        - name: unreadOnly
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+
+  /notifications/{id}/read:
+    patch:
+      operationId: markNotificationRead
+      tags: [notifications]
+      summary: Mark notification as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+
+  /notifications/read-all:
+    patch:
+      operationId: markAllNotificationsRead
+      tags: [notifications]
+      summary: Mark all notifications as read
+      responses:
+        "200":
+          description: Done
+
+  # DASHBOARD
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get dashboard stats
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Recent activity feed
+      responses:
+        "200":
+          description: Activity items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+  /dashboard/expiry-summary:
+    get:
+      operationId: getExpirySummary
+      tags: [dashboard]
+      summary: Expiry breakdown by days
+      responses:
+        "200":
+          description: Expiry summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExpirySummary"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    # AUTH
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    RegisterInput:
+      type: object
+      required: [name, email, password, role]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+          enum: [admin, bulk_seller, reseller, small_seller]
+
+    AuthResult:
+      type: object
+      required: [token, user]
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+
+    # USER
+    User:
+      type: object
+      required: [id, name, email, role, createdAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [admin, bulk_seller, reseller, small_seller]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: ["string", "null"]
+          format: date-time
+
+    UserUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+        isActive:
+          type: boolean
+
+    # CONTACT
+    Contact:
+      type: object
+      required: [id, name, createdAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdBy:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    ContactInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        notes:
+          type: string
+
+    ContactUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        notes:
+          type: string
+
+    # BATCH
+    Batch:
+      type: object
+      required: [id, name, ownerId, totalRecords, availableRecords, createdAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        notes:
+          type: ["string", "null"]
+        ownerId:
+          type: string
+        ownerName:
+          type: ["string", "null"]
+        sourcedFromUserId:
+          type: ["string", "null"]
+        sourcedFromUserName:
+          type: ["string", "null"]
+        isSourced:
+          type: boolean
+        totalRecords:
+          type: number
+        availableRecords:
+          type: number
+        soldRecords:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+
+    BatchInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        notes:
+          type: string
+        sourcedFromUserId:
+          type: string
+        isSourced:
+          type: boolean
+
+    BatchUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        notes:
+          type: string
+
+    ExtractEmailsInput:
+      type: object
+      required: [rawText]
+      properties:
+        rawText:
+          type: string
+        batchId:
+          type: ["string", "null"]
+
+    ExtractEmailsResult:
+      type: object
+      required: [emails, total, duplicatesInPaste, duplicatesInInventory, valid]
+      properties:
+        emails:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailExtractItem"
+        total:
+          type: number
+        valid:
+          type: number
+        duplicatesInPaste:
+          type: number
+        duplicatesInInventory:
+          type: number
+        invalid:
+          type: number
+
+    EmailExtractItem:
+      type: object
+      required: [email, isDuplicateInPaste, isDuplicateInInventory, isValid]
+      properties:
+        email:
+          type: string
+        isDuplicateInPaste:
+          type: boolean
+        isDuplicateInInventory:
+          type: boolean
+        isPreviouslySold:
+          type: boolean
+        isValid:
+          type: boolean
+
+    BatchUploadInput:
+      type: object
+      required: [emails, durationDays, startDate]
+      properties:
+        emails:
+          type: array
+          items:
+            type: string
+        durationDays:
+          type: number
+        startDate:
+          type: string
+          format: date-time
+        skipDuplicates:
+          type: boolean
+
+    BatchUploadResult:
+      type: object
+      required: [added, skipped, duplicates]
+      properties:
+        added:
+          type: number
+        skipped:
+          type: number
+        duplicates:
+          type: number
+
+    # INVENTORY
+    InventoryRecord:
+      type: object
+      required: [id, email, batchId, ownerId, currentHolderId, status, durationDays, startDate, expiryDate, daysLeft, createdAt]
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        batchId:
+          type: string
+        batchName:
+          type: ["string", "null"]
+        ownerId:
+          type: string
+        ownerName:
+          type: ["string", "null"]
+        currentHolderId:
+          type: string
+        currentHolderName:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [available, sold, reported, replaced, wiped, renewed, refunded]
+        durationDays:
+          type: number
+        startDate:
+          type: string
+          format: date-time
+        expiryDate:
+          type: string
+          format: date-time
+        daysLeft:
+          type: number
+        isDuplicate:
+          type: boolean
+        isSold:
+          type: boolean
+        isReported:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    InventoryPage:
+      type: object
+      required: [records, total, page, limit]
+      properties:
+        records:
+          type: array
+          items:
+            $ref: "#/components/schemas/InventoryRecord"
+        total:
+          type: number
+        page:
+          type: number
+        limit:
+          type: number
+
+    InventoryUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+        durationDays:
+          type: number
+        startDate:
+          type: string
+          format: date-time
+
+    # SALE
+    Sale:
+      type: object
+      required: [id, sellerId, buyerType, price, durationDays, startDate, expiryDate, itemCount, createdAt]
+      properties:
+        id:
+          type: string
+        sellerId:
+          type: string
+        sellerName:
+          type: ["string", "null"]
+        buyerType:
+          type: string
+          enum: [platform_user, external_contact]
+        buyerId:
+          type: ["string", "null"]
+        buyerName:
+          type: ["string", "null"]
+        price:
+          type: number
+        durationDays:
+          type: number
+        startDate:
+          type: string
+          format: date-time
+        expiryDate:
+          type: string
+          format: date-time
+        itemCount:
+          type: number
+        status:
+          type: string
+          enum: [active, completed, refunded, replaced, expired]
+        notes:
+          type: ["string", "null"]
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SaleItem"
+        createdAt:
+          type: string
+          format: date-time
+
+    SaleItem:
+      type: object
+      required: [id, inventoryRecordId, email, daysLeft]
+      properties:
+        id:
+          type: string
+        inventoryRecordId:
+          type: string
+        email:
+          type: string
+        daysLeft:
+          type: number
+        status:
+          type: string
+
+    SalePage:
+      type: object
+      required: [sales, total, page, limit]
+      properties:
+        sales:
+          type: array
+          items:
+            $ref: "#/components/schemas/Sale"
+        total:
+          type: number
+        page:
+          type: number
+        limit:
+          type: number
+
+    SaleInput:
+      type: object
+      required: [buyerType, price, durationDays, startDate, inventoryRecordIds]
+      properties:
+        buyerType:
+          type: string
+          enum: [platform_user, external_contact]
+        buyerId:
+          type: string
+        price:
+          type: number
+        durationDays:
+          type: number
+        startDate:
+          type: string
+          format: date-time
+        inventoryRecordIds:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+
+    RenewalInput:
+      type: object
+      required: [durationDays, price]
+      properties:
+        durationDays:
+          type: number
+        price:
+          type: number
+        notes:
+          type: string
+
+    # REPORT
+    Report:
+      type: object
+      required: [id, saleId, reportedById, reporterType, status, items, createdAt]
+      properties:
+        id:
+          type: string
+        saleId:
+          type: string
+        reportedById:
+          type: string
+        reporterType:
+          type: string
+          enum: [platform_user, external_contact]
+        reporterName:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [pending, hold, wipe, refund, replace, resolved]
+        action:
+          type: ["string", "null"]
+          enum: [hold, wipe, refund, replace, null]
+        notes:
+          type: ["string", "null"]
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReportItem"
+        refundTotal:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+
+    ReportItem:
+      type: object
+      required: [id, inventoryRecordId, email, daysLeft, refundAmount, status]
+      properties:
+        id:
+          type: string
+        inventoryRecordId:
+          type: string
+        email:
+          type: string
+        daysLeft:
+          type: number
+        refundAmount:
+          type: number
+        status:
+          type: string
+          enum: [pending, replaced, refunded, wiped, held]
+        replacementEmail:
+          type: ["string", "null"]
+
+    ReportPage:
+      type: object
+      required: [reports, total, page, limit]
+      properties:
+        reports:
+          type: array
+          items:
+            $ref: "#/components/schemas/Report"
+        total:
+          type: number
+        page:
+          type: number
+        limit:
+          type: number
+
+    ReportInput:
+      type: object
+      required: [saleId, inventoryRecordIds]
+      properties:
+        saleId:
+          type: string
+        inventoryRecordIds:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+
+    ReportUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, hold, wipe, refund, replace, resolved]
+        action:
+          type: string
+          enum: [hold, wipe, refund, replace]
+        notes:
+          type: string
+
+    SingleReplaceInput:
+      type: object
+      required: [reportItemId, replacementEmail]
+      properties:
+        reportItemId:
+          type: string
+        replacementEmail:
+          type: string
+
+    BulkReplaceInput:
+      type: object
+      required: [rawText]
+      properties:
+        rawText:
+          type: string
+
+    BulkReplaceResult:
+      type: object
+      required: [matched, unmatched, invalid, duplicates, total]
+      properties:
+        matched:
+          type: number
+        unmatched:
+          type: number
+        invalid:
+          type: number
+        duplicates:
+          type: number
+        total:
+          type: number
+        details:
+          type: array
+          items:
+            $ref: "#/components/schemas/BulkReplaceDetail"
+
+    BulkReplaceDetail:
+      type: object
+      required: [email, status]
+      properties:
+        email:
+          type: string
+        status:
+          type: string
+          enum: [matched, unmatched, invalid, duplicate]
+        reportItemId:
+          type: ["string", "null"]
+
+    # SETTLEMENT
+    Settlement:
+      type: object
+      required: [id, reportId, saleId, sellerId, amount, type, status, createdAt]
+      properties:
+        id:
+          type: string
+        reportId:
+          type: string
+        saleId:
+          type: string
+        sellerId:
+          type: string
+        sellerName:
+          type: ["string", "null"]
+        amount:
+          type: number
+        type:
+          type: string
+          enum: [refund, replacement]
+        status:
+          type: string
+          enum: [pending, approved, rejected, completed]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    SettlementInput:
+      type: object
+      required: [reportId, saleId, type]
+      properties:
+        reportId:
+          type: string
+        saleId:
+          type: string
+        type:
+          type: string
+          enum: [refund, replacement]
+        notes:
+          type: string
+
+    # NOTIFICATION
+    Notification:
+      type: object
+      required: [id, userId, type, message, isRead, createdAt]
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        type:
+          type: string
+          enum: [expiry_warning, report_received, replacement_done, refund_processed, new_sale, sale_reported]
+        message:
+          type: string
+        data:
+          type: object
+          additionalProperties: true
+        isRead:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    # DASHBOARD
+    DashboardStats:
+      type: object
+      required: [totalInventory, availableInventory, soldInventory, expiringSoon, activeReports, pendingRefunds, pendingReplacements, totalSales, totalRevenue]
+      properties:
+        totalInventory:
+          type: number
+        availableInventory:
+          type: number
+        soldInventory:
+          type: number
+        expiringSoon:
+          type: number
+        activeReports:
+          type: number
+        pendingRefunds:
+          type: number
+        pendingReplacements:
+          type: number
+        totalSales:
+          type: number
+        totalRevenue:
+          type: number
+
+    ActivityItem:
+      type: object
+      required: [id, type, message, timestamp]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [sale, report, replacement, refund, upload, renewal]
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        metadata:
+          type: object
+          additionalProperties: true
+
+    ExpirySummary:
+      type: object
+      required: [today, tomorrow, threeDays, sevenDays, expired]
+      properties:
+        today:
+          type: number
+        tomorrow:
+          type: number
+        threeDays:
+          type: number
+        sevenDays:
+          type: number
+        expired:
+          type: number

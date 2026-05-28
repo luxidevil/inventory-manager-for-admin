@@ -1,0 +1,253 @@
+Build a mobile-friendly web app called "Bulk Inventory Manager" for bulk sellers, resellers, and downstream sellers who trade time-sensitive email-based inventory.
+
+Tech requirements:
+- Use MongoDB as the database
+- Build a modern full-stack web app
+- Mobile responsive UI is required
+- Clean dashboard-based UX
+- Include copy and search buttons in important places
+- Design for fast bulk operations
+
+Core product idea:
+This is not a normal inventory app. It is a chain-based inventory, resale, reporting, refund, and replacement management platform.
+
+Users can:
+- paste bulk raw data
+- extract valid emails from pasted text
+- detect duplicates
+- assign duration/expiry to records
+- sell inventory to buyers
+- resell purchased inventory downstream
+- track chain of custody internally
+- handle bulk reports
+- calculate refunds based on remaining days
+- replace bad records individually or in bulk
+- renew the same data for the same buyer
+
+Important business rules:
+- Every sale is its own relationship with its own price, duration, and refund logic
+- If A sells to B, and B sells to C, then refund calculation for A->B and B->C must be different if their prices or durations differ
+- C must never know about A
+- A and B can both know about reports internally if the reported records came through them
+- Downstream buyers only see their immediate seller
+- Upstream lineage must be stored in backend, but hidden from downstream users
+- External/off-platform buyers must be supported as contacts/end users
+- Reports from end users must still notify the correct chain internally
+- If A does not replace, B should still be able to replace C using B’s own stock
+- Replacement and refund decisions must be tracked per sale relationship, not globally
+
+Main roles:
+- Admin
+- Bulk Seller
+- Reseller / Buyer-Seller
+- Small Seller
+- External Buyer / End User contact
+
+Main features:
+
+1. Authentication and roles
+- Login/signup
+- Role-based dashboards
+- Admin overview
+
+2. Bulk inventory upload
+- User can paste raw text or lists
+- Extract emails automatically
+- Normalize emails
+- Detect duplicates inside same paste
+- Detect duplicates against existing seller inventory
+- Warn before saving duplicate or previously sold records
+- Save records as inventory batches
+
+3. Inventory model
+Each inventory record should support:
+- email
+- source batch
+- original owner
+- current holder
+- status
+- duration
+- start date
+- expiry date
+- days left
+- duplicate flags
+- lineage/source chain
+- whether it has been sold, reported, replaced, wiped, renewed, or refunded
+
+4. Batch management
+- Create inventory batch
+- Store batch name, notes, quantity, source, upload date
+- Mark whether stock is owned directly or sourced from another seller
+- If sourced, store from whom it came
+
+5. Selling inventory
+- Seller can select records or batches and sell them
+- Ask:
+  - who is buying
+  - sale price
+  - duration of sale
+- Buyer can be:
+  - platform user
+  - external contact
+- If buyer is on platform, sale must reflect on both dashboards
+- Store each sale as a separate transaction edge
+
+6. Expiry-aware selling
+- Seller should be able to filter inventory by minimum days left
+- Example: buyer needs 10-day data
+- Seller enters 10
+- System shows only records with at least 10 days left
+- Seller selects buyer and duration and completes sale
+- Inventory and ownership chain update correctly
+
+7. Renewals
+- Same buyer should be able to renew the same data
+- Add a renew action on previous sales
+- Renew should allow updating duration and price
+- Maintain proper sale history
+
+8. Duplicate prevention
+- Warn if a seller tries to upload or sell duplicate emails
+- Detect duplicates by normalized email
+- Support duplicate checks:
+  - within same upload
+  - against same seller inventory
+  - against previously sold records
+- Provide clear warning UI
+
+9. Expiry reminders
+- Show reminders starting 2 days before expiry
+- Show popup/alert notifications repeatedly for expiring inventory
+- Show expiring stock on dashboard
+
+10. Reports
+- Buyer or downstream seller can report one or many records
+- Bulk report option required
+- Report should support statuses/actions:
+  - hold
+  - wipe
+  - refund
+  - replace
+- Each report item should show days left
+- Both immediate seller and relevant upstream chain should be informed internally
+- Downstream user should only see their direct seller
+
+11. Refund calculation
+For each reported record, refund must be calculated per sale relationship:
+- refund = price sold / duration * days left
+- If A sold to B at one price and B sold to C at another price, both refund amounts must be different and tracked separately
+- Never use a single shared refund number across the whole chain
+
+12. Replacement flow
+- Seller can replace individual reported records manually
+- Replacement data must be validated through email extraction and duplicate checks
+- Replacement should preserve the remaining days of the original reported record
+- If original row had 6 days left, replacement should carry 6 days left unless explicitly renewed
+
+13. Bulk replacement
+- Seller must be able to click "Bulk Replace"
+- For large reports like 100 rows, seller can paste many replacement emails at once
+- System extracts and validates emails
+- System matches valid replacements to unresolved reported rows automatically
+- Handle:
+  - exact match count
+  - fewer replacements than reports
+  - extra replacements
+  - duplicate replacements
+  - already sold replacements
+- Update all matched report rows in bulk
+- Preserve remaining days for each replaced row
+
+14. Visibility and permissions
+- C must only know B as seller
+- C must never see A
+- A and B can both know about reports if those records originated through them
+- Upstream chain visibility is internal only
+- Downstream UI should show only direct trade relationships
+
+15. External buyers / end users
+- Support off-platform buyers/end users as contacts
+- Small sellers can sell to users not on the platform
+- Those end users can still be attached to sales and reports
+- Reports from end users should notify the proper immediate seller and relevant upstream internal chain
+
+16. Search and copy features
+Add search and copy buttons in key places:
+- inventory table
+- extracted emails
+- filtered results
+- batches
+- sales
+- buyers
+- reports
+- replacement lists
+Support:
+- search by email
+- search by buyer
+- search by batch
+- search by transaction
+- search by report
+Add:
+- copy all
+- copy selected
+- copy filtered results
+
+17. Dashboards
+Create dashboard views for:
+- seller
+- reseller
+- small seller
+- admin
+Dashboard widgets should include:
+- total inventory
+- sold inventory
+- expiring soon
+- active reports
+- pending refunds
+- replacements pending
+- recent transactions
+
+MongoDB data design expectations:
+Create a solid schema using MongoDB collections for:
+- users
+- externalContacts
+- inventoryBatches
+- inventoryRecords
+- sales
+- saleItems
+- reports
+- reportItems
+- settlements
+- notifications
+- renewals
+- auditLogs
+
+Suggested architecture logic:
+- Treat every sale as a separate edge/transaction
+- One record can move through multiple sale edges
+- A report is one event, but settlements/refunds/replacements are tracked per sale edge
+- Keep full internal lineage for traceability
+- Enforce strict permission-based visibility
+
+UI expectations:
+- modern admin/dashboard look
+- fast bulk actions
+- easy tables with filtering
+- mobile responsive
+- clear badges for status
+- popup reminders for expiry
+- quick action buttons for sell, renew, report, replace, copy, and search
+
+Please generate:
+- full-stack app code
+- MongoDB models/schema
+- sample seed data
+- responsive pages
+- core CRUD flows
+- dashboard UI
+- validation logic
+- duplicate detection logic
+- refund calculation logic
+- bulk report and bulk replacement workflows
+
+Prioritize MVP completeness and working flows over advanced polish.
