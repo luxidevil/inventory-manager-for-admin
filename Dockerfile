@@ -13,8 +13,10 @@ COPY . .
 # pnpm 11 exits non-zero when a package build script (esbuild) isn't
 # pre-approved, even though all deps install successfully. Tolerate that
 # specific case, then explicitly build esbuild.
-RUN pnpm install --frozen-lockfile --config.confirmModulesPurge=false || true \
- && pnpm rebuild esbuild
+RUN pnpm install --frozen-lockfile > /tmp/pnpm-install.log 2>&1; ec=$?; \
+    cat /tmp/pnpm-install.log; \
+    if [ $ec -ne 0 ] && ! grep -q ERR_PNPM_IGNORED_BUILDS /tmp/pnpm-install.log; then exit $ec; fi; \
+    pnpm rebuild esbuild
 
 # Build the frontend under the /inventory base path, then the API server.
 # vite.config.ts requires PORT and BASE_PATH to be set even for a build.
