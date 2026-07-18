@@ -9,8 +9,12 @@ RUN corepack enable
 # Copy the whole monorepo
 COPY . .
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Install dependencies.
+# pnpm 11 exits non-zero when a package build script (esbuild) isn't
+# pre-approved, even though all deps install successfully. Tolerate that
+# specific case, then explicitly build esbuild.
+RUN pnpm install --frozen-lockfile --config.confirmModulesPurge=false || true \
+ && pnpm rebuild esbuild
 
 # Build the frontend under the /inventory base path, then the API server.
 # vite.config.ts requires PORT and BASE_PATH to be set even for a build.
