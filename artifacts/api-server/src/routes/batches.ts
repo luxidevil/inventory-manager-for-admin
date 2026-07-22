@@ -28,7 +28,7 @@ router.post("/batches/extract-emails", requireAuth, async (req, res): Promise<vo
   const unique = [...seen];
   const existingRecords = await InventoryRecord.find({
     emailNormalized: { $in: unique },
-    currentHolderId: userId,
+    isDeleted: { $ne: true },
   }).select("emailNormalized isSold");
 
   const existingMap = new Map<string, { isSold: boolean }>();
@@ -38,7 +38,7 @@ router.post("/batches/extract-emails", requireAuth, async (req, res): Promise<vo
     email,
     isValid: true,
     isDuplicateInPaste: dupInPaste.has(email),
-    isDuplicateInInventory: existingMap.has(email) && !existingMap.get(email)!.isSold,
+    isDuplicateInInventory: existingMap.has(email),
     isPreviouslySold: existingMap.get(email)?.isSold ?? false,
   }));
 
@@ -102,7 +102,7 @@ router.post("/batches/:id/upload", requireAuth, async (req, res): Promise<void> 
   const expiry = new Date(start.getTime() + durationDays * 86400000);
   const now = new Date();
 
-  const existing = await InventoryRecord.find({ emailNormalized: { $in: emails.map((e: string) => e.toLowerCase()) }, currentHolderId: userId }).select("emailNormalized");
+  const existing = await InventoryRecord.find({ emailNormalized: { $in: emails.map((e: string) => e.toLowerCase()) }, isDeleted: { $ne: true } }).select("emailNormalized");
   const existingSet = new Set(existing.map(r => r.emailNormalized));
 
   let added = 0, skipped = 0, duplicates = 0;
@@ -110,18 +110,37 @@ router.post("/batches/:id/upload", requireAuth, async (req, res): Promise<void> 
 
   for (const email of emails as string[]) {
     const norm = email.toLowerCase();
+    // Enforce global uniqueness: never add an email that already exists anywhere
+    // in live inventory (any holder, sold or not), nor twice within the same paste.
     if (existingSet.has(norm)) {
       duplicates++;
-      if (skipDuplicates) { skipped++; continue; }
+      skipped++;
+      continue;
     }
-    const daysLeft = Math.max(0, Math.ceil((expiry.getTime() - now.getTime()) / 86400000));
-    toInsert.push({ email, emailNormalized: norm, batchId: batch._id, ownerId: userId, currentHolderId: userId, durationDays, startDate: start, expiryDate: expiry, isDuplicate: existingSet.has(norm), lineage: [userId] });
+    existingSet.add(norm);
+    toInsert.push({ email, emailNormalized: norm, batchId: batch._id, ownerId: userId, currentHolderId: userId, durationDays, startDate: start, expiryDate: expiry, isDuplicate: false, lineage: [userId] });
     added++;
   }
 
   if (toInsert.length > 0) {
-    await InventoryRecord.insertMany(toInsert);
-    await Batch.findByIdAndUpdate(batch._id, { $inc: { totalRecords: added, availableRecords: added } });
+    let inserted = toInsert.length;
+    try {
+      await InventoryRecord.insertMany(toInsert, { ordered: false });
+    } catch (err: any) {
+      // Unique-index backstop caught a concurrent duplicate insert.
+      if (err && err.code === 11000) {
+        inserted = Array.isArray(err.insertedDocs) ? err.insertedDocs.length : 0;
+        const failed = toInsert.length - inserted;
+        added -= failed;
+        duplicates += failed;
+        skipped += failed;
+      } else {
+        throw err;
+      }
+    }
+    if (inserted > 0) {
+      await Batch.findByIdAndUpdate(batch._id, { $inc: { totalRecords: inserted, availableRecords: inserted } });
+    }
   }
 
   res.json({ added, skipped, duplicates });

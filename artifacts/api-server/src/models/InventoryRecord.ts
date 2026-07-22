@@ -48,4 +48,11 @@ InventoryRecordSchema.index({ emailNormalized: 1, currentHolderId: 1 });
 InventoryRecordSchema.index({ batchId: 1 });
 InventoryRecordSchema.index({ expiryDate: 1 });
 
+// Enforce global uniqueness: the same account email can never exist twice
+// in live inventory, regardless of who currently holds it or whether it was sold.
+InventoryRecordSchema.index(
+  { emailNormalized: 1 },
+  { unique: true, partialFilterExpression: { isDeleted: false } }
+);
+
 export const InventoryRecord = mongoose.model<IInventoryRecord>("InventoryRecord", InventoryRecordSchema);
