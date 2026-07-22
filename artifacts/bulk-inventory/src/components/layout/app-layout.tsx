@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { useListNotifications } from "@workspace/api-client-react";
 import {
   LayoutDashboard, Package, Archive, ShoppingCart, AlertTriangle,
-  Users, Bell, LogOut, Menu, X, ChevronRight, Contact, RefreshCcw,
+  Users, Bell, LogOut, Menu, X, ChevronRight, Contact, RefreshCcw, BookOpen,
 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -68,6 +68,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         {visibleNav.map(item => <NavLink key={item.path} item={item} />)}
       </nav>
       <div className="p-3 border-t border-sidebar-border">
+        <button
+          onClick={() => { window.open("/inventory/guide.html", "_blank"); setSidebarOpen(false); }}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors mb-1"
+        >
+          <BookOpen className="h-4 w-4" />
+          <span className="flex-1 text-left">User Guide</span>
+        </button>
         <button
           onClick={() => { setLocation("/notifications"); setSidebarOpen(false); }}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors mb-1"

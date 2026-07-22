@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bulk Inventory Manager — User Guide</title>
+<style>
+  :root{--bg:#0f1115;--panel:#171a21;--text:#e6e8ee;--muted:#9aa3b2;--accent:#6ea8fe;--border:#2a2f3a;--code:#1e2330;--good:#4ade80;--warn:#fbbf24;--bad:#f87171}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.65}
+  .wrap{max-width:900px;margin:0 auto;padding:32px 24px 80px}
+  header{border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:28px}
+  h1{font-size:2rem;margin:0 0 6px}
+  .sub{color:var(--muted)}
+  h2{font-size:1.4rem;margin:44px 0 10px;padding-top:18px;border-top:1px solid var(--border);color:var(--accent)}
+  h3{font-size:1.05rem;margin:24px 0 6px}
+  p,li{color:var(--text)}
+  .muted{color:var(--muted)}
+  code,kbd{background:var(--code);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:.9em}
+  table{border-collapse:collapse;width:100%;margin:12px 0}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;font-size:.93rem;vertical-align:top}
+  th{background:var(--panel)}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin:14px 0}
+  .tag{display:inline-block;border-radius:999px;padding:1px 10px;font-size:.78rem;border:1px solid var(--border)}
+  .g{color:var(--good)} .w{color:var(--warn)} .r{color:var(--bad)}
+  .toc{columns:2;gap:32px}
+  .toc a{color:var(--accent);text-decoration:none}
+  .toc a:hover{text-decoration:underline}
+  ol.steps li{margin:8px 0}
+  .btnbar{position:fixed;top:14px;right:16px;display:flex;gap:8px}
+  .btn{background:var(--accent);color:#0b1220;font-weight:600;border:none;border-radius:8px;padding:9px 15px;cursor:pointer;font-size:.9rem}
+  .btn.sec{background:var(--panel);color:var(--text);border:1px solid var(--border)}
+  blockquote{margin:10px 0;padding:8px 14px;border-left:3px solid var(--accent);background:var(--panel);border-radius:0 8px 8px 0}
+  @media print{
+    :root{--bg:#fff;--panel:#f4f6f8;--text:#111;--muted:#555;--accent:#1d4ed8;--border:#ccc;--code:#eef1f5}
+    .btnbar{display:none} body{background:#fff} h2{break-after:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="btnbar">
+  <button class="btn" onclick="window.print()">Print / Save as PDF</button>
+  <button class="btn sec" onclick="downloadPage()">Download Guide</button>
+</div>
+<div class="wrap">
+<header>
+  <h1>📦 Bulk Inventory Manager — User Guide</h1>
+  <div class="sub">Everything you need to know to manage, sell, and track digital account inventory. Print this page or save it as PDF with the button in the top-right corner.</div>
+</header>
+
+<h2 id="toc">Contents</h2>
+<div class="toc">
+  <ol>
+    <li><a href="#what">What is this app?</a></li>
+    <li><a href="#start">Getting started (register &amp; login)</a></li>
+    <li><a href="#roles">User roles</a></li>
+    <li><a href="#dashboard">Dashboard</a></li>
+    <li><a href="#batches">Batches &amp; uploading emails</a></li>
+    <li><a href="#inventory">Inventory</a></li>
+    <li><a href="#sales">Sales (selling &amp; renewing)</a></li>
+    <li><a href="#contacts">Contacts &amp; invite links</a></li>
+    <li><a href="#reports">Reports (refunds &amp; replacements)</a></li>
+    <li><a href="#settlements">Settlements</a></li>
+    <li><a href="#notifications">Notifications</a></li>
+    <li><a href="#users">Users (admin only)</a></li>
+    <li><a href="#walkthrough">Full walkthrough: first sale in 5 minutes</a></li>
+    <li><a href="#rules">Golden rules &amp; FAQ</a></li>
+  </ol>
+</div>
+
+<h2 id="what">1. What is this app?</h2>
+<p>Bulk Inventory Manager is a platform for people who buy digital accounts in bulk and resell them with time-limited durations. It keeps track of:</p>
+<ul>
+  <li><b>What you own</b> — every account email, which batch it came from, and when it expires.</li>
+  <li><b>What you sold</b> — to whom, for how much, and for how long.</li>
+  <li><b>Problems</b> — buyers can report dead accounts; the app calculates fair pro-rata refunds and manages replacements.</li>
+</ul>
+<blockquote>Think of it as a stock system + sales ledger + after-sales support desk, built specifically for account reselling.</blockquote>
+
+<h2 id="start">2. Getting started</h2>
+<h3>Register</h3>
+<ol class="steps">
+  <li>Open the app and click <b>Register</b>.</li>
+  <li>Enter your <b>name</b>, <b>email</b>, and a <b>password</b>.</li>
+  <li>You're in — every new account starts as a <b>Reseller</b>. An admin can upgrade your role later.</li>
+</ol>
+<blockquote>💡 If someone sold accounts to you <i>before</i> you registered (as an "external contact"), register with the <b>same email address</b> — your past purchases will automatically link to your new account.</blockquote>
+<h3>Login</h3>
+<p>Use your email + password. Your session lasts 7 days, then you'll be asked to log in again. Use the red logout button at the bottom of the sidebar to sign out.</p>
+
+<h2 id="roles">3. User roles</h2>
+<table>
+  <tr><th>Role</th><th>Who it's for</th></tr>
+  <tr><td><span class="tag">Admin</span></td><td>The single platform administrator. Manages users, roles, and account activation. <b>There is exactly one admin — the admin role can never be given to anyone else.</b></td></tr>
+  <tr><td><span class="tag">Bulk Seller</span></td><td>Buys large stocks of accounts and sells them onward.</td></tr>
+  <tr><td><span class="tag">Reseller</span></td><td>Default role. Buys from bulk sellers, sells to end customers.</td></tr>
+  <tr><td><span class="tag">Small Seller</span></td><td>Smaller-volume seller.</td></tr>
+</table>
+<p class="muted">All roles use the same screens; only the <b>Users</b> page is admin-only.</p>
+
+<h2 id="dashboard">4. Dashboard</h2>
+<p>Your home screen. At a glance you see:</p>
+<table>
+  <tr><th>Card</th><th>Meaning</th></tr>
+  <tr><td>Total Inventory</td><td>All account records you currently hold.</td></tr>
+  <tr><td>Available</td><td class="g">Records not yet sold — ready to sell.</td></tr>
+  <tr><td>Sold</td><td>Records you've sold to buyers.</td></tr>
+  <tr><td>Expiring Soon</td><td class="w">Accounts expiring <b>within 2 days</b> — act on these first!</td></tr>
+  <tr><td>Total Revenue</td><td>Sum of all your sales.</td></tr>
+  <tr><td>Active Reports</td><td class="r">Open problem reports from your buyers.</td></tr>
+  <tr><td>Pending Refunds / Pending Replacements</td><td>Report items still waiting for you to act.</td></tr>
+</table>
+<p>Below the cards: <b>Recent Activity</b> (latest uploads, sales, reports) and an <b>expiry summary</b> showing how many accounts expire today, tomorrow, this week, etc.</p>
+
+<h2 id="batches">5. Batches &amp; uploading emails</h2>
+<p>A <b>batch</b> is a group of accounts you acquired together (e.g. "July stock — 30 day accounts"). All inventory enters the system through batches.</p>
+<h3>Create a batch</h3>
+<ol class="steps">
+  <li>Go to <b>Batches</b> → <b>New Batch</b>.</li>
+  <li>Give it a name (and notes if you like), then save.</li>
+</ol>
+<h3>Upload emails into a batch</h3>
+<ol class="steps">
+  <li>Open the batch and click <b>Upload Emails</b>.</li>
+  <li><b>Paste anything</b> — a clean list, a messy chat export, a spreadsheet column. The app automatically extracts every valid email address from the text.</li>
+  <li>Set the <b>Duration (days)</b> — how long these accounts are valid — and the <b>Start Date</b>. The expiry date of every account is calculated automatically (start + duration).</li>
+  <li>Review the preview: it shows valid emails, invalid entries, duplicates within your paste, and emails that <b>already exist in inventory</b>.</li>
+  <li>Confirm. You'll see how many were added and how many were skipped.</li>
+</ol>
+<blockquote>🔒 <b>Duplicate protection is absolute.</b> The same email can never exist twice in inventory — even if it was sold before, even if someone else holds it now. Duplicates are always skipped automatically.</blockquote>
+<p>You can also <b>edit</b> a batch's name/notes or <b>delete</b> a batch you no longer need.</p>
+
+<h2 id="inventory">6. Inventory</h2>
+<p>The <b>Inventory</b> page lists every individual account record with its email, batch, status, start/expiry dates, and days left.</p>
+<table>
+  <tr><th>Status</th><th>Meaning</th></tr>
+  <tr><td><span class="tag g">available</span></td><td>In stock, can be sold.</td></tr>
+  <tr><td><span class="tag">sold</span></td><td>Sold to a buyer (the buyer now holds it).</td></tr>
+  <tr><td><span class="tag r">reported</span></td><td>A buyer reported a problem with this account.</td></tr>
+</table>
+<ul>
+  <li><b>Filter &amp; search</b> to find specific records or view only expiring ones.</li>
+  <li><b>Edit</b> a record if you need to correct its details.</li>
+  <li><b>Remove</b> a record to take it out of inventory (e.g. a dead account you're discarding).</li>
+</ul>
+
+<h2 id="sales">7. Sales</h2>
+<h3>Create a sale</h3>
+<ol class="steps">
+  <li>Go to <b>Sales</b> → <b>New Sale</b>.</li>
+  <li>Choose the <b>Buyer Type</b>:
+    <ul>
+      <li><b>Platform user</b> — someone with an account on this app. They receive the records directly and get a notification.</li>
+      <li><b>External contact</b> — someone not on the platform yet. Pick an existing contact or add one on the spot (name, email, phone). You can send them an <b>invite link</b> so they can join and claim their purchases later.</li>
+    </ul>
+  </li>
+  <li><b>Select the inventory records</b> to sell (only available ones are shown).</li>
+  <li>Set the <b>Price ($)</b>, <b>Duration (days)</b>, and <b>Start Date</b>, plus optional notes.</li>
+  <li>Confirm — the records move from "available" to "sold", your batch counters update, and the buyer (if a platform user) is notified instantly.</li>
+</ol>
+<h3>Renew a sale</h3>
+<p>When a sale is about to expire, open it and choose <b>Renew</b>: set a new duration and price. The expiry date and each item's days-left are recalculated, and the sale becomes active again. Perfect for subscription-style repeat customers.</p>
+<h3>My Purchases</h3>
+<p>If someone sold accounts <i>to you</i> on the platform, they appear in your purchases view — you see exactly which emails you bought, from whom, and when they expire.</p>
+
+<h2 id="contacts">8. Contacts &amp; invite links</h2>
+<p><b>Contacts</b> are your external customers — buyers who don't have a platform account (yet).</p>
+<ul>
+  <li><b>Add a contact</b> with name, email, and phone.</li>
+  <li><b>Generate an invite link</b> and copy it with one click. Send it to your customer via WhatsApp/Telegram/etc.</li>
+  <li>When they open the link and register, their account is <b>automatically linked</b> to all past sales you made to that contact — they instantly see everything they bought from you.</li>
+</ul>
+<blockquote>💡 This means you can sell to anyone immediately and let them "claim" their purchase history whenever they're ready to join.</blockquote>
+
+<h2 id="reports">9. Reports — refunds &amp; replacements</h2>
+<p>When accounts stop working, buyers don't need to argue in chat — they file a <b>Report</b>.</p>
+<h3>Filing a report (as a buyer)</h3>
+<ol class="steps">
+  <li>Open the purchase, click <b>File a Report</b>.</li>
+  <li>Select the specific items (emails) that have problems and add notes.</li>
+  <li>Submit. The app automatically calculates a <b>fair refund</b> for each item, pro-rated by remaining time: <code>(price ÷ items ÷ duration) × days left</code>.</li>
+</ol>
+<h3>Handling a report (as the seller)</h3>
+<ol class="steps">
+  <li>You get a notification: "<i>N item(s) from sale have been reported</i>". Open <b>Reports</b>.</li>
+  <li>For each reported item, choose an <b>action</b>:
+    <ul>
+      <li><b>Replace</b> — provide a replacement email for that item, or use <b>Bulk Replace</b>: paste a list of replacement emails and the app assigns them one-by-one.</li>
+      <li><b>Refund</b> — accept the calculated refund amount (tracked in Settlements).</li>
+    </ul>
+  </li>
+  <li>Update the report status as you resolve it. Dashboard counters (Pending Refunds / Pending Replacements) track what's still open.</li>
+</ol>
+
+<h2 id="settlements">10. Settlements</h2>
+<p>The money side of reports. Every refund or compensation you owe (or are owed) from a report is tracked as a <b>settlement</b> with a type, amount, status (<span class="tag w">pending</span> → <span class="tag g">completed</span>), and notes — so nothing gets forgotten between you and your buyers.</p>
+
+<h2 id="notifications">11. Notifications</h2>
+<p>The <b>Notifications</b> page collects everything that needs your attention:</p>
+<ul>
+  <li><b>New sale</b> — you received inventory from a seller.</li>
+  <li><b>Sale reported</b> — a buyer reported items from one of your sales.</li>
+</ul>
+<p>Mark items read one-by-one or use <b>read all</b>.</p>
+
+<h2 id="users">12. Users (admin only)</h2>
+<p>Visible only to the administrator:</p>
+<ul>
+  <li>See all users with role and active status; search by name or email.</li>
+  <li><b>Change roles</b> between Bulk Seller / Reseller / Small Seller. <b>The admin role can never be assigned</b> — there is only ever one admin.</li>
+  <li><b>Activate / deactivate</b> accounts, or delete users.</li>
+  <li>The admin account itself cannot be edited, deactivated, or deleted by anyone.</li>
+</ul>
+
+<h2 id="walkthrough">13. Full walkthrough — your first sale in 5 minutes</h2>
+<div class="card">
+<ol class="steps">
+  <li><b>Register</b> → log in. You land on the Dashboard (empty for now).</li>
+  <li>Go to <b>Batches</b> → <b>New Batch</b> → name it <code>My first stock</code>.</li>
+  <li>Click <b>Upload Emails</b> → paste your account emails → set duration <code>30</code> days, start date today → confirm. Your inventory now shows the accounts as <span class="tag g">available</span> with expiry dates 30 days out.</li>
+  <li>Go to <b>Contacts</b> → add your customer (name + email).</li>
+  <li>Go to <b>Sales</b> → <b>New Sale</b> → buyer type <b>External Contact</b> → pick your customer → select the accounts → set price and duration → confirm. Done: items are <span class="tag">sold</span>, revenue appears on your dashboard.</li>
+  <li>Click <b>Copy invite link</b> on the sale/contact and send it to your customer so they can join and see their purchase.</li>
+  <li>Later: if the customer reports a dead account, you'll get a notification → open <b>Reports</b> → paste a replacement email or approve the auto-calculated refund. Track the money in <b>Settlements</b>.</li>
+  <li>When the 30 days are nearly up, open the sale → <b>Renew</b> with a new price/duration.</li>
+</ol>
+</div>
+
+<h2 id="rules">14. Golden rules &amp; FAQ</h2>
+<div class="card">
+  <p>🔒 <b>No duplicate emails, ever.</b> Inventory can never contain the same email twice — uploads that repeat an existing email are skipped automatically, even if it was sold long ago.</p>
+  <p>👑 <b>One admin only.</b> The admin role cannot be given, taken, or transferred.</p>
+  <p>📅 <b>Expiry is automatic.</b> Start date + duration = expiry. Watch the "Expiring Soon" card daily.</p>
+</div>
+<h3>FAQ</h3>
+<table>
+  <tr><th>Question</th><th>Answer</th></tr>
+  <tr><td>I pasted 100 emails but fewer were added — why?</td><td>Some were invalid, repeated within your paste, or already exist in inventory. The upload summary shows exactly how many were skipped and why.</td></tr>
+  <tr><td>Can I sell to someone who isn't on the platform?</td><td>Yes — sell to an <b>External Contact</b>, then send them an invite link. Their purchases auto-link when they register with the same email.</td></tr>
+  <tr><td>How is a refund amount decided?</td><td>Automatically, pro-rata: the item's share of the sale price × the fraction of days remaining. Nobody has to negotiate.</td></tr>
+  <tr><td>What happens when a sale expires?</td><td>The sale shows as expired; use <b>Renew</b> to extend it with a new duration and price.</td></tr>
+  <tr><td>I forgot my password.</td><td>Contact the administrator.</td></tr>
+</table>
+
+<p class="muted" style="margin-top:40px">Bulk Inventory Manager — User Guide. Use the <b>Print / Save as PDF</b> button (top right) to keep an offline copy or share it with your team.</p>
+</div>
+<script>
+function downloadPage(){
+  const blob = new Blob(['<!doctype html>' + document.documentElement.outerHTML], {type:'text/html'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'bulk-inventory-user-guide.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+</script>
+</body>
+</html>
