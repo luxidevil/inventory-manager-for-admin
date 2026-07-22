@@ -1,6 +1,7 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 import { connectDB } from "./lib/db";
+import { ensureSingleAdmin } from "./lib/adminSeed";
 
 const rawPort = process.env["PORT"];
 
@@ -32,6 +33,7 @@ async function connectWithRetry(): Promise<void> {
     try {
       await connectDB();
       logger.info("MongoDB connection established");
+      await ensureSingleAdmin();
       return;
     } catch (err) {
       logger.error(

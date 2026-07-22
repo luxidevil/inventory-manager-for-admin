@@ -2,6 +2,7 @@ import { Router, type IRouter } from "express";
 import { User } from "../models/User";
 import { Contact } from "../models/Contact";
 import { signToken, requireAuth } from "../lib/auth";
+import { ADMIN_EMAIL } from "../lib/adminSeed";
 
 const router: IRouter = Router();
 
@@ -17,14 +18,18 @@ router.post("/auth/login", async (req, res): Promise<void> => {
 });
 
 router.post("/auth/register", async (req, res): Promise<void> => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password } = req.body;
   if (!name || !email || !password) { res.status(400).json({ error: "Name, email, and password required" }); return; }
-  const exists = await User.findOne({ email: email.toLowerCase() });
+  const normalized = String(email).toLowerCase();
+  // The single admin account is reserved; nobody can register as/over it.
+  if (normalized === ADMIN_EMAIL) { res.status(400).json({ error: "Email already registered" }); return; }
+  const exists = await User.findOne({ email: normalized });
   if (exists) { res.status(400).json({ error: "Email already registered" }); return; }
-  const user = await User.create({ name, email, password, role: role ?? "reseller" });
+  // Role is NEVER taken from the client. Everyone registers as reseller.
+  const user = await User.create({ name, email, password, role: "reseller" });
   // Auto-link any Contact records with the same email (Splitwise-style ghost records)
   const linked = await Contact.updateMany(
-    { email: email.toLowerCase(), isLinked: false },
+    { email: normalized, isLinked: false },
     { $set: { linkedUserId: user._id, isLinked: true } }
   );
   const token = signToken({ userId: user._id.toString(), role: user.role });
