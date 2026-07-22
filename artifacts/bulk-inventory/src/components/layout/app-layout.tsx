@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useListNotifications } from "@workspace/api-client-react";
+import { OnboardingTour, startTour } from "@/components/onboarding-tour";
 import {
   LayoutDashboard, Package, Archive, ShoppingCart, AlertTriangle,
   Users, Bell, LogOut, Menu, X, ChevronRight, Contact, RefreshCcw, BookOpen,
@@ -76,6 +77,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <span className="flex-1 text-left">User Guide</span>
         </button>
         <button
+          onClick={() => { startTour(); setSidebarOpen(false); }}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors mb-1"
+        >
+          <ChevronRight className="h-4 w-4" />
+          <span className="flex-1 text-left">Walkthrough</span>
+        </button>
+        <button
           onClick={() => { setLocation("/notifications"); setSidebarOpen(false); }}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors mb-1"
         >
@@ -98,6 +106,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
+      <OnboardingTour />
       {/* Desktop sidebar */}
       <aside className="hidden md:flex w-60 flex-col flex-shrink-0">
         <Sidebar />
